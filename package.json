@@ -1,0 +1,32 @@
+{
+    "name": "clickup",
+    "version": "1.0.0",
+    "description": "Do Gmail para o ClickUp",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": {
+        "email": "dti@sobral.ufc.br",
+        "name": "Almino Melo"
+    },
+    "repository": {
+        "type": "git"
+    },
+    "license": "ISC",
+    "nodemonConfig": {
+        "ignore": [
+            "*.json",
+            "*.md"
+        ]
+    },
+    "dependencies": {
+        "axios": "^0.21.4",
+        "body-parser": "^1.19.0",
+        "express": "^4.17.1",
+        "fs": "0.0.1-security",
+        "moment": "^2.29.1",
+        "node-html-markdown": "^1.1.2"
+    }
+}

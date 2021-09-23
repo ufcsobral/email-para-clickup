@@ -1,0 +1,12 @@
+version: "3"
+
+services:
+  node:
+    image: node:lts-slim
+    working_dir: /app
+    env_file: .env
+    command: bash -c "npm install -g nodemon && nodemon index.js"
+    ports:
+      - 80:80
+    volumes:
+      - "./:/app"
