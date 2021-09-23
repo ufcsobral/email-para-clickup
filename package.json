@@ -12,7 +12,8 @@
         "name": "Almino Melo"
     },
     "repository": {
-        "type": "git"
+        "type": "git",
+        "url": "https://github.com/ufcsobral/email-para-clickup"
     },
     "license": "ISC",
     "nodemonConfig": {

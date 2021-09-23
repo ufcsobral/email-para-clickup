@@ -1,51 +1,33 @@
-// import axios from "axios";
-import { NodeHtmlMarkdown } from "node-html-markdown";
-import moment from "moment";
+import markdown from "./markdown.js";
+import axios from "axios";
 import fs from "fs";
+import moment from "moment";
 
 const api_token = process.env.API_TOKEN;
 const list_id = process.env.LIST_ID;
 
 export default (body) => {
-    /* Converte HTML para MarkDown */
-    let md = NodeHtmlMarkdown.translate(body.html);
+    /* Converte o HTML para MarkDown */
+    let data = { markdown_description: markdown(body.html) };
+    data.markdown_description =
+        `# ${body.headers.from} enviou\n\n` +
+        `${data.markdown_description}\n\n---`;
 
-    /* Remove cabeçalhos de e-mail */
-    md = md
-        .replace(/\\\-{2,}\sForwarded message\s\-{2,}/g, "")
-        .replace(/^(De|From|Date|Subject|Assunto|Cc|Cco|To|Para)\:.+/gim, "");
+    data.name = body.headers.subject.replace(/^(Fwd|Enc|Re)\:/i, "").trim();
+    data.custom_fields = [{ id: "message_id", value: body.headers.message_id }];
 
-    /* Retira espaços desnecessários */
-    md = md
-        .trim()
-        .split(/\r?\n/)
-        .map((val) => val.trim());
+    axios
+        .post(`https://api.clickup.com/api/v2/list/${list_id}/task`, data, {
+            headers: { Authorization: `${api_token}` },
+        })
+        .then((response) => {
+            let date = moment().format("YYY-MM-DD_HH-mm-ss.x");
+            fs.writeFileSync(`success/${date}.json`, JSON.stringify(response));
+        })
+        .catch((error) => {
+            console.error(error.stack);
 
-    /* Remove espaços e quebras de linha duplicados */
-    md = md
-        .join("\n")
-        .replace(/(>\n){2,}/g, ">\n")
-        .replace(/\s+/, " ")
-        .replace(/\n{2,}/g, "\n\n");
-
-    /* Remove a assinatura do Gmail */
-    md = md.substring(0, /\\\-\-\r?\n/g.exec(md).index).trim();
-
-    let date = moment().format("YYY-MM-DD_HH-mm-ss.x");
-    fs.writeFileSync(`debug/${date}.md`, md);
-
-    let form = { markdown_description: md };
-
-    // const headers = form.getHeaders();
-
-    // headers.authorization = `Bearer ${api_token}`;
-
-    // axios({
-    //     method: "post",
-    //     url: `https://api.clickup.com/api/v2/list/${list_id}/task`,
-    //     data: form,
-    //     headers,
-    // })
-    //     .then(() => console.log("success"))
-    //     .catch(() => console.log("fail"));
+            let date = moment().format("YYY-MM-DD_HH-mm-ss.x");
+            fs.writeFileSync(`error/${date}.json`, JSON.stringify(error));
+        });
 };
