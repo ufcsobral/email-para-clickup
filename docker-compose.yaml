@@ -5,7 +5,7 @@ services:
     image: node:lts-slim
     working_dir: /app
     env_file: .env
-    command: bash -c "npm install -g nodemon && nodemon index.js"
+    command: bash -c "npm install -g nodemon && npm ci && nodemon index.js"
     ports:
       - 80:80
     volumes:
