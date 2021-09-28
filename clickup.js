@@ -6,7 +6,7 @@ import moment from "moment";
 const api_token = process.env.API_TOKEN;
 const list_id = process.env.LIST_ID;
 
-export default (body) => {
+export default async (body) => {
     /* Converte o HTML para MarkDown */
     let data = { markdown_description: markdown(body.html) };
     data.markdown_description =
@@ -16,7 +16,7 @@ export default (body) => {
     data.name = body.headers.subject.replace(/^(Fwd|Enc|Re)\:/i, "").trim();
     data.custom_fields = [{ id: "message_id", value: body.headers.message_id }];
 
-    axios
+    return axios
         .post(`https://api.clickup.com/api/v2/list/${list_id}/task`, data, {
             headers: { Authorization: `${api_token}` },
         })
