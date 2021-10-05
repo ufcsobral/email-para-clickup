@@ -6,7 +6,7 @@ import moment from "moment";
 const api_token = process.env.API_TOKEN;
 const list_id = process.env.LIST_ID;
 
-export default async (body) => {
+const create_task = async (body) => {
     /* Converte o HTML para MarkDown */
     let data = { markdown_description: markdown(body.html) };
     data.markdown_description =
@@ -21,13 +21,15 @@ export default async (body) => {
             headers: { Authorization: `${api_token}` },
         })
         .then((response) => {
-            let date = moment().format("YYY-MM-DD_HH-mm-ss.x");
+            const date = moment().format("YYY-MM-DD_HH-mm-ss.x");
             fs.writeFileSync(`success/${date}.json`, JSON.stringify(response));
         })
         .catch((error) => {
             console.error(error.stack);
 
-            let date = moment().format("YYY-MM-DD_HH-mm-ss.x");
+            const date = moment().format("YYY-MM-DD_HH-mm-ss.x");
             fs.writeFileSync(`error/${date}.json`, JSON.stringify(error));
         });
 };
+
+export { create_task };
