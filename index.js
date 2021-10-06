@@ -3,6 +3,8 @@ import bodyParser from "body-parser";
 import fs from "fs";
 // import moment from "moment";
 import { create_task } from "./clickup.js";
+import db from "./db/connection.js";
+import task_emails from "./db/models/task_emails.js";
 
 const app = express();
 
@@ -16,7 +18,17 @@ app.post("/", async (req, res) => {
     const from = JSON.parse(fs.readFileSync("ignore-from.json", "utf8"));
 
     if (!from.includes(req.body.envelope.from)) {
-        const clickup = await create_task(req.body);
+        const { message_id } = req.body.headers;
+
+        await db();
+        const task = await task_emails.findByPk(message_id);
+
+        if (task === null) {
+            console.log('tarefa ainda não criada');
+            await create_task(req.body);
+        } else {
+            console.log('tarefa já existe');
+        }
     }
 
     res.send("Thanks!");

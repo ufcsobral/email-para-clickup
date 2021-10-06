@@ -1,12 +1,15 @@
 version: "3"
 
 services:
-  node:
-    image: node:lts-slim
-    working_dir: /app
-    env_file: .env
-    command: bash -c "npm install -g nodemon && npm ci && nodemon index.js"
-    ports:
-      - 80:80
-    volumes:
-      - "./:/app"
+    node:
+        image: node:lts-slim
+        deploy:
+            restart_policy:
+                condition: on-failure
+        working_dir: /app
+        env_file: .env
+        command: bash -c "npm install -g nodemon && npm ci && nodemon index.js"
+        ports:
+            - 80:80
+        volumes:
+            - "./:/app"
