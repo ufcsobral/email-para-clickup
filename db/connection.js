@@ -10,12 +10,12 @@ export default async () => {
         const resultado = await database.sync();
         console.log(resultado);
 
-        fs.writeFileSync(`${dir}/debug/${date}.json`, stringify(resultado));
+        fs.writeFileSync(`${dir}/debug/${date}.json`, JSON.stringify(resultado));
 
         return resultado;
     } catch (error) {
         console.error(error.stack);
 
-        fs.writeFileSync(`${dir}/error/${date}.json`, stringify(error));
+        fs.writeFileSync(`${dir}/error/${date}.json`, JSON.stringify(error));
     }
 };

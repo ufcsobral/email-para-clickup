@@ -31,7 +31,7 @@ const create_task = async (body) => {
             r.push(message_id);
             
             task_references(r, data);
-            fs.writeFile(`success/${date}.json`, JSON.stringify(data));
+            fs.writeFileSync(`success/${date}.json`, JSON.stringify(data));
         })
         .catch((error) => {
             console.error(error.stack);

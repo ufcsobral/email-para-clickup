@@ -24,11 +24,14 @@ app.post("/", async (req, res) => {
         const task = await task_emails.findByPk(message_id);
 
         if (task === null) {
-            console.log('tarefa ainda não criada');
+            console.log('Tarefa ainda não criada');
             await create_task(req.body);
         } else {
-            console.log('tarefa já existe');
+            console.log('Tarefa já existe');
         }
+    } else {
+        console.log(`E-mail de ${req.body.envelope.from} ignorado`);
+        console.log(`Assunto: ${req.body.headers.subject}`);
     }
 
     res.send("Thanks!");
