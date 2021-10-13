@@ -15,19 +15,22 @@ app.post("/", async (req, res) => {
     const date = moment().format("YYYY-MM-DD_HH-mm-ss.x");
     fs.writeFileSync(`debug/${date}.json`, JSON.stringify(req.body));
 
-    const from = JSON.parse(fs.readFileSync("ignore-from.json", "utf8"));
+    const ignored = JSON.parse(fs.readFileSync("ignore-from.json", "utf8"));
 
-    if (!from.includes(req.body.envelope.from)) {
+    const matches = /[^< ]+(?=>)/.exec(req.headers.from);
+    const from = matches[0];
+
+    if (!ignored.includes(from)) {
         const { message_id } = req.body.headers;
 
         await db();
         const task = await task_emails.findByPk(message_id);
 
         if (task === null) {
-            console.log('Tarefa ainda não criada');
+            console.log("Tarefa ainda não criada");
             await create_task(req.body);
         } else {
-            console.log('Tarefa já existe');
+            console.log("Tarefa já existe");
         }
     } else {
         console.log(`E-mail de ${req.body.envelope.from} ignorado`);
