@@ -17,10 +17,9 @@ app.post("/", async (req, res) => {
 
     const ignored = JSON.parse(fs.readFileSync("ignore-from.json", "utf8"));
 
-    const matches = /[^< ]+(?=>)/.exec(req.headers.from);
-    const from = matches[0];
+    const from = req.body.headers.from.match(/[^< ]+(?=>)/);
 
-    if (!ignored.includes(from)) {
+    if (!ignored.includes(from[0])) {
         const { message_id } = req.body.headers;
 
         await db();
