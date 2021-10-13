@@ -20,7 +20,7 @@ const create_task = async (body) => {
     data.name = subject.replace(/^(Fwd|Enc|Re)\:/i, "").trim();
     data.custom_fields = [{ id: "message_id", value: message_id }];
 
-    const date = moment().format("YYY-MM-DD_HH-mm-ss.x");
+    const date = moment().format("YYYY-MM-DD_HH-mm-ss.x");
 
     return axios
         .post(`https://api.clickup.com/api/v2/list/${list_id}/task`, data, {

@@ -1,7 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import fs from "fs";
-// import moment from "moment";
+import moment from "moment";
 import { create_task } from "./clickup.js";
 import db from "./db/connection.js";
 import task_emails from "./db/models/task_emails.js";
@@ -12,8 +12,8 @@ app.use(bodyParser.json({ limit: "50mb" }));
 
 app.post("/", async (req, res) => {
     // console.log(req.body);
-    // let date = moment().format('YYY-MM-DD_HH-mm-ss.x');
-    // fs.writeFileSync(`${date}.json`, JSON.stringify(req.body));
+    const date = moment().format("YYYY-MM-DD_HH-mm-ss.x");
+    fs.writeFileSync(`debug/${date}.json`, JSON.stringify(req.body));
 
     const from = JSON.parse(fs.readFileSync("ignore-from.json", "utf8"));
 

@@ -5,7 +5,7 @@ import { stringify } from "flatted";
 const dir = process.env.WORKING_DIR
 
 export default async () => {
-    const date = moment().format("YYY-MM-DD_HH-mm-ss.x");
+    const date = moment().format("YYYY-MM-DD_HH-mm-ss.x");
     try {
         const resultado = await database.sync();
         console.log(resultado);
