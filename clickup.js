@@ -3,7 +3,6 @@ import axios from "axios";
 import fs from "fs";
 import moment from "moment";
 import { stringify } from "flatted";
-import db from "./db/connection.js";
 import { task_references } from "./db/models/task_emails.js";
 
 const api_token = process.env.API_TOKEN;
@@ -13,7 +12,7 @@ const create_task = async (body) => {
     const { from, subject, message_id, references } = body.headers;
 
     /* Converte o HTML para MarkDown */
-    let data = { markdown_description: markdown(body.html) };
+    let data = { markdown_description: markdown(body.html ?? body.plain) };
     data.markdown_description =
         `# ${from} enviou\n\n` + `${data.markdown_description}\n\n---`;
 
