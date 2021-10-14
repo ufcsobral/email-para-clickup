@@ -12,9 +12,20 @@ const create_task = async (body) => {
     const { from, subject, message_id, references } = body.headers;
 
     /* Converte o HTML para MarkDown */
-    let data = { markdown_description: markdown(body.html ?? body.plain) };
-    data.markdown_description =
-        `# ${from} enviou\n\n` + `${data.markdown_description}\n\n---`;
+    let data = {};
+    data.markdown_description = `# ${from} enviou\n\n`;
+
+    if (body.html === null) {
+        if (body.plain !== null) {
+            const plain = body.plain.replace(/^/gm, ">");
+            data.markdown_description = `${data.markdown_description}${plain}`;
+        }
+    } else {
+        const html = markdown(body.html).replace(/^/gm, ">");
+        data.markdown_description = `${data.markdown_description}${html}`;
+    }
+
+    data.markdown_description = `${data.markdown_description}\n\n---`;
 
     data.name = subject.replace(/^(Fwd|Enc|Re)\:/i, "").trim();
     data.custom_fields = [{ id: "message_id", value: message_id }];
@@ -26,9 +37,15 @@ const create_task = async (body) => {
             headers: { Authorization: `${api_token}` },
         })
         .then(({ data }) => {
-            let r = references.split(" ");
-            r.push(message_id);
-            
+            let r = [];
+
+            if (typeof references === "undefined") {
+                r = [message_id];
+            } else {
+                r = references.split(" ");
+                r.push(message_id);
+            }
+
             task_references(r, data);
             fs.writeFileSync(`success/${date}.json`, JSON.stringify(data));
         })
