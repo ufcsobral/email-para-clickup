@@ -2,7 +2,7 @@ import database from "./database.js";
 import moment from "moment";
 import fs from "fs";
 import { stringify } from "flatted";
-const dir = process.env.WORKING_DIR
+const dir = process.env.WORKING_DIR;
 
 export default async () => {
     const date = moment().format("YYYY-MM-DD_HH-mm-ss.x");
@@ -10,7 +10,10 @@ export default async () => {
         const resultado = await database.sync();
         console.log(resultado);
 
-        fs.writeFileSync(`${dir}/debug/${date}.json`, JSON.stringify(resultado));
+        fs.writeFileSync(
+            `${dir}/debug/${date}.json`,
+            stringify({ keys: Object.keys(resultado), data: resultado })
+        );
 
         return resultado;
     } catch (error) {

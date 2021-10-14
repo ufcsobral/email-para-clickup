@@ -8,8 +8,8 @@ import { task_references } from "./db/models/task_emails.js";
 const api_token = process.env.API_TOKEN;
 const list_id = process.env.LIST_ID;
 
-const create_task = async (body) => {
-    const { from, subject, message_id, references } = body.headers;
+const create_task = async (from, body) => {
+    const { subject, message_id, references } = body.headers;
 
     /* Converte o HTML para MarkDown */
     let data = {};
@@ -46,13 +46,16 @@ const create_task = async (body) => {
                 r.push(message_id);
             }
 
-            task_references(r, data);
             fs.writeFileSync(`success/${date}.json`, JSON.stringify(data));
+            task_references(r, data);
+            return data;
         })
         .catch((error) => {
             console.error(error.stack);
 
             fs.writeFileSync(`error/${date}.json`, stringify(error));
+
+            return false;
         });
 };
 

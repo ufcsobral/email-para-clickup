@@ -2,3 +2,5 @@ debug
 node_modules
 .env
 ignore-from.json
+*.ignore-from.json
+*.sqlite
