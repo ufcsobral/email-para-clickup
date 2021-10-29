@@ -8,10 +8,7 @@ import { default as d } from "debug";
 
 const debug = d("dev");
 
-const api_token = process.env.API_TOKEN;
-const list_id = process.env.LIST_ID;
-
-const create_task = async (from, body) => {
+const create_task = async (config, from, body) => {
     const { subject, message_id, references } = body.headers;
 
     /* Converte o HTML para MarkDown */
@@ -42,9 +39,13 @@ const create_task = async (from, body) => {
     const date = moment().format("YYYY-MM-DD_HH-mm-ss.x");
 
     return axios
-        .post(`https://api.clickup.com/api/v2/list/${list_id}/task`, data, {
-            headers: { Authorization: `${api_token}` },
-        })
+        .post(
+            `https://api.clickup.com/api/v2/list/${config.clickup.list}/task`,
+            data,
+            {
+                headers: { Authorization: `${config.clickup.token}` },
+            }
+        )
         .then(({ data }) => {
             let r = [];
 

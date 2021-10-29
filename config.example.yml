@@ -1,0 +1,10 @@
+clickup:
+    token: pk_123abc
+    list: 123456789
+ignore:
+    - a@sobral.ufc.br
+    - b@sobral.ufc.br
+    - c@sobral.ufc.br
+    - d@sobral.ufc.br
+    - e@sobral.ufc.br
+    - f@sobral.ufc.br

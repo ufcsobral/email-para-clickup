@@ -1,6 +1,6 @@
 debug
 node_modules
 .env
-ignore-from.json
-*.ignore-from.json
+config.*.yml
+!config.example.yml
 *.sqlite

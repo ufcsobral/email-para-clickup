@@ -37,7 +37,8 @@
         "node-html-markdown": "^1.1.2",
         "sequelize": "^6.6.5",
         "sqlite3": "^5.0.2",
-        "supports-color": "^9.0.2"
+        "supports-color": "^9.0.2",
+        "yaml": "^1.10.2"
     },
     "devDependencies": {
         "glob": "^7.2.0",

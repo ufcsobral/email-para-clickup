@@ -5,8 +5,10 @@ import moment from "moment";
 import { create_task } from "./clickup.js";
 import db from "./db/connection.js";
 import task_emails from "./db/models/task_emails.js";
+import YAML from "yaml";
+import { default as d } from "debug";
 
-const debug = require("debug")("index");
+const debug = d("index");
 const app = express();
 
 app.use(bodyParser.json({ limit: "50mb" }));
@@ -15,20 +17,25 @@ app.post("/:to", async (req, res) => {
     // console.log(req.body);
     const date = moment().format("YYYY-MM-DD_HH-mm-ss.x");
     fs.writeFileSync(`debug/mail.${date}.json`, JSON.stringify(req.body));
-    // return;
 
-    const ignored = JSON.parse(fs.readFileSync("ignore-from.json", "utf8"));
-    const ignored_file = `${req.params.to}.ignore-from.json`;
+    const config_file = `config.${req.params.to}.yml`;
+    let config = [];
 
-    if (fs.existsSync(ignored_file)) {
-        // const also_ignore = JSON.parse(fs.readFileSync(ignored_file, "utf8"));
-        ignored.push(...JSON.parse(fs.readFileSync(ignored_file, "utf8")));
+    if (fs.existsSync(config_file)) {
+        config = YAML.parse(fs.readFileSync(config_file, "utf8"));
+    } else {
+        const r =
+            `Não existe configuração para "${req.params.to}". ` +
+            `Crie o arquivo confg.${req.params.to}.yml`;
+        console.log(r);
+        res.send(r);
+        return;
     }
-    debug(ignored_file, fs.existsSync(ignored_file), ignored);
+    debug(config_file, fs.existsSync(config_file), config);
 
     const from = req.body.headers.from.match(/[^< ]+(?=>)/);
 
-    if (!ignored.includes(from[0])) {
+    if (!config.ignore.includes(from[0])) {
         const { message_id } = req.body.headers;
 
         await db();
@@ -36,7 +43,7 @@ app.post("/:to", async (req, res) => {
 
         if (task === null) {
             debug("Tarefa ainda não criada");
-            const clickup = await create_task(from, req.body);
+            const clickup = await create_task(config, from, req.body);
 
             if (clickup !== false) {
                 const r = `Tarefa criada: https://app.clickup.com/t/${clickup.id}`;
