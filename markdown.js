@@ -1,9 +1,9 @@
-
 import { NodeHtmlMarkdown } from "node-html-markdown";
-// import moment from "moment";
-// import fs from "fs";
+import { default as d } from "debug";
 
 export default (html) => {
+    const debug = d("markdown");
+
     /* Converte HTML para MarkDown */
     let md = NodeHtmlMarkdown.translate(html);
 
@@ -25,11 +25,15 @@ export default (html) => {
         .replace(/\s+/, " ")
         .replace(/\n{2,}/g, "\n\n");
 
+    /* Localiza a assinatura do Gmail */
+    const r = /\\\-\-\r?\n/g.exec(md);
+    debug();
+
     /* Remove a assinatura do Gmail */
-    md = md.substring(0, /\\\-\-\r?\n/g.exec(md).index).trim();
+    md = md.substring(0).trim();
 
     // let date = moment().format("YYY-MM-DD_HH-mm-ss.x");
     // fs.writeFileSync(`debug/${date}.md`, md);
 
     return md;
-}
+};

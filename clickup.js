@@ -4,6 +4,9 @@ import fs from "fs";
 import moment from "moment";
 import { stringify } from "flatted";
 import { task_references } from "./db/models/task_emails.js";
+import { default as d } from "debug";
+
+const debug = d("dev");
 
 const api_token = process.env.API_TOKEN;
 const list_id = process.env.LIST_ID;
@@ -15,20 +18,26 @@ const create_task = async (from, body) => {
     let data = {};
     data.markdown_description = `# ${from} enviou\n\n`;
 
-    if (body.html === null) {
-        if (body.plain !== null) {
-            const plain = body.plain.replace(/^/gm, ">");
-            data.markdown_description = `${data.markdown_description}${plain}`;
-        }
-    } else {
-        const html = markdown(body.html).replace(/^/gm, ">");
+    if (body.html !== null) {
+        const html = markdown(body.html.trim());
         data.markdown_description = `${data.markdown_description}${html}`;
+    } else if (body.plain !== null) {
+        const plain = body.plain.trim();
+        data.markdown_description = `${data.markdown_description}${plain}`;
+    } else {
+        return false;
     }
+
+    debug(data.markdown_description);
 
     data.markdown_description = `${data.markdown_description}\n\n---`;
 
     data.name = subject.replace(/^(Fwd|Enc|Re)\:/i, "").trim();
     data.custom_fields = [{ id: "message_id", value: message_id }];
+
+    if (process.env.NODE_ENV !== "production") {
+        data.name = `[${process.env.NODE_ENV}] ${data.name}`;
+    }
 
     const date = moment().format("YYYY-MM-DD_HH-mm-ss.x");
 

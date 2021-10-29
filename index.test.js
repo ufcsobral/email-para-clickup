@@ -1,6 +1,15 @@
+import glob from "glob";
+import { default as d } from "debug";
 import fs from "fs";
-import clickup from "./clickup.js";
+import { create_task } from "./clickup.js";
 
-const mail = JSON.parse(fs.readFileSync('debug/212021-09-22_18-40-50.1632336050249.json', 'utf8'));
+const debug = d("dev");
+const posts = glob.sync("debug/mail.*.json");
+const rand = Math.floor(Math.random() * posts.length);
 
-clickup(mail);
+const mail = JSON.parse(fs.readFileSync(posts[rand]), "utf8");
+const from = mail.headers.from.match(/[^< ]+(?=>)/);
+
+debug("%O", posts[rand]);
+
+await create_task(from, mail);
