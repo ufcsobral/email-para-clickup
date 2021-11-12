@@ -87,10 +87,19 @@ const comment_task = async function (task_id, config, body) {
             headers: { Authorization: `${config.clickup.token}` },
         })
         .then(({ data }) => {
+            const { message_id, references } = body.headers;
+            let r =
+                typeof references === "undefined" ? [] : references.split(" ");
+
             fs.writeFileSync(
                 `success/comment.${date}.json`,
-                JSON.stringify(data)
+                JSON.stringify({ id: task_id, data })
             );
+
+            try {
+                task_references(r, { id: task_id });
+            } catch (e) {}
+
             return data;
         })
         .catch((error) => {

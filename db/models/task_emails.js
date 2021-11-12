@@ -17,13 +17,19 @@ const model = database.define("Task has e-mail", {
 });
 
 const task_references = async (references, data) => {
-    debug('associando tarefa ao e-mail');
-    debug('E-mails: %O', references.map((r) => {
-        return {value: r, length: r.length}
-    }));
-    debug('Tarefa: %o', data);
+    debug("associando tarefa ao e-mail");
+    debug(
+        "E-mails: %O",
+        references.map((r) => {
+            return { value: r, length: r.length };
+        })
+    );
+    debug("Tarefa: %o", data);
 
     await connection();
+
+    const results = await Promise.all(references.map((v) => model.findByPk(v)));
+    references = references.filter((v, k) => results[k] === null);
 
     try {
         return model.bulkCreate(
