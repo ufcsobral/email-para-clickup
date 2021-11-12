@@ -7,6 +7,7 @@ import { task_references } from "./db/models/task_emails.js";
 import { default as d } from "debug";
 
 const debug = d("dev");
+const date = moment().format("YYYY-MM-DD_HH-mm-ss.x");
 
 const create_task = async (config, from, body) => {
     const { subject, message_id, references } = body.headers;
@@ -35,8 +36,6 @@ const create_task = async (config, from, body) => {
     if (process.env.NODE_ENV !== "production") {
         data.name = `[${process.env.NODE_ENV}] ${data.name}`;
     }
-
-    const date = moment().format("YYYY-MM-DD_HH-mm-ss.x");
 
     return axios
         .post(
@@ -69,4 +68,36 @@ const create_task = async (config, from, body) => {
         });
 };
 
-export { create_task };
+const comment_task = async function (task_id, config, body) {
+    let data = {};
+
+    if (body.html !== null) {
+        data.comment_text = body.html
+            .trim()
+            .replace(/<[^>]*>?/gm, "")
+            .trim();
+    } else if (body.plain !== null) {
+        data.comment_text = body.plain.trim();
+    } else {
+        return false;
+    }
+
+    return axios
+        .post(`https://api.clickup.com/api/v2/task/${task_id}/comment`, data, {
+            headers: { Authorization: `${config.clickup.token}` },
+        })
+        .then(({ data }) => {
+            fs.writeFileSync(
+                `success/comment.${date}.json`,
+                JSON.stringify(data)
+            );
+            return data;
+        })
+        .catch((error) => {
+            console.error(error.stack);
+            fs.writeFileSync(`error/comment.${date}.json`, stringify(error));
+            return false;
+        });
+};
+
+export { create_task, comment_task };

@@ -2,7 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import fs from "fs";
 import moment from "moment";
-import { create_task } from "./clickup.js";
+import { create_task, comment_task } from "./clickup.js";
 import db from "./db/connection.js";
 import task_emails from "./db/models/task_emails.js";
 import YAML from "yaml";
@@ -34,14 +34,13 @@ app.post("/:to", async (req, res) => {
     debug(config_file, fs.existsSync(config_file), config);
 
     const from = req.body.headers.from.match(/[^< ]+(?=>)/);
+    const { message_id } = req.body.headers;
 
-    if (!config.ignore.includes(from[0])) {
-        const { message_id } = req.body.headers;
+    await db();
+    const task = await task_emails.findByPk(message_id);
 
-        await db();
-        const task = await task_emails.findByPk(message_id);
-
-        if (task === null) {
+    if (task === null) {
+        if (!config.ignore.includes(from[0])) {
             debug("Tarefa ainda não criada");
             const clickup = await create_task(config, from, req.body);
 
@@ -56,17 +55,17 @@ app.post("/:to", async (req, res) => {
                 );
             }
         } else {
-            const r = `Tarefa já existe: https://app.clickup.com/t/${task.task_id}`;
-            debug(r);
-            res.send(r);
+            const r = [
+                `E-mail de ${from} ignorado.`,
+                `Assunto do e-mail ignorado: ${req.body.headers.subject}`,
+            ];
+            r.forEach((d) => debug(d));
+            res.send(r.join("\n"));
         }
     } else {
-        const r = [
-            `E-mail de ${from} ignorado.`,
-            `Assunto do e-mail ignorado: ${req.body.headers.subject}`,
-        ];
-        r.forEach((d) => debug(d));
-        res.send(r.join("\n"));
+        const r = `Tarefa já existe: https://app.clickup.com/t/${task.task_id}`;
+        debug(r);
+        res.send(await comment_task(task.task_id, config, req.body));
     }
 });
 
