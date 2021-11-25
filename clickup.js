@@ -11,10 +11,13 @@ const date = moment().format("YYYY-MM-DD_HH-mm-ss.x");
 
 const create_task = async (config, body) => {
     const { subject, message_id, references, from } = body.headers;
+    const date = moment(body.headers.date).format(
+        "HH[h]mm[min] [de] DD/MM/YYYY"
+    );
 
     /* Converte o HTML para MarkDown */
     let data = {};
-    data.markdown_description = `# ${from} enviou\n\n`;
+    data.markdown_description = `# Às ${date} ${from} enviou\n\n`;
 
     if (body.html !== null) {
         const html = markdown(body.html.trim());
@@ -85,7 +88,7 @@ const comment_task = async function (task_id, config, body) {
     data.comment_text = data.comment_text.replace(/(\r\n|\n|\r)/gm, "\n");
     data.comment_text = data.comment_text.replace(/\s{2,}/gm, "\n\n");
     data.comment_text = data.comment_text.replace(/ +/gm, " ");
-    data.comment_text = `# ${body.headers.from} enviou\n\n${data.comment_text}`
+    data.comment_text = `# ${body.headers.from} enviou\n\n${data.comment_text}`;
 
     return axios
         .post(`https://api.clickup.com/api/v2/task/${task_id}/comment`, data, {
