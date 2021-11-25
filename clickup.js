@@ -9,8 +9,8 @@ import { default as d } from "debug";
 const debug = d("dev");
 const date = moment().format("YYYY-MM-DD_HH-mm-ss.x");
 
-const create_task = async (config, from, body) => {
-    const { subject, message_id, references } = body.headers;
+const create_task = async (config, body) => {
+    const { subject, message_id, references, from } = body.headers;
 
     /* Converte o HTML para MarkDown */
     let data = {};
@@ -30,7 +30,7 @@ const create_task = async (config, from, body) => {
 
     data.markdown_description = `${data.markdown_description}\n\n---`;
 
-    data.name = subject.replace(/^(Fwd|Enc|Re)\:/i, "").trim();
+    data.name = subject;
     data.custom_fields = [{ id: "message_id", value: message_id }];
 
     if (process.env.NODE_ENV !== "production") {
@@ -56,7 +56,7 @@ const create_task = async (config, from, body) => {
             }
 
             fs.writeFileSync(`success/${date}.json`, JSON.stringify(data));
-            task_references(r, data);
+            task_references(r, data, subject);
             return data;
         })
         .catch((error) => {
@@ -74,7 +74,7 @@ const comment_task = async function (task_id, config, body) {
     if (body.html !== null) {
         data.comment_text = body.html
             .trim()
-            .replace(/<[^>]*>?/gm, "")
+            .replace(/<[^>]*>?/gm, " ")
             .trim();
     } else if (body.plain !== null) {
         data.comment_text = body.plain.trim();
@@ -82,12 +82,17 @@ const comment_task = async function (task_id, config, body) {
         return false;
     }
 
+    data.comment_text = data.comment_text.replace(/(\r\n|\n|\r)/gm, "\n");
+    data.comment_text = data.comment_text.replace(/\s{2,}/gm, "\n\n");
+    data.comment_text = data.comment_text.replace(/ +/gm, " ");
+    data.comment_text = `# ${body.headers.from} enviou\n\n${data.comment_text}`
+
     return axios
         .post(`https://api.clickup.com/api/v2/task/${task_id}/comment`, data, {
             headers: { Authorization: `${config.clickup.token}` },
         })
         .then(({ data }) => {
-            const { message_id, references } = body.headers;
+            const { references, subject } = body.headers;
             let r =
                 typeof references === "undefined" ? [] : references.split(" ");
 
@@ -97,7 +102,7 @@ const comment_task = async function (task_id, config, body) {
             );
 
             try {
-                task_references(r, { id: task_id });
+                task_references(r, { id: task_id }, subject);
             } catch (e) {}
 
             return data;

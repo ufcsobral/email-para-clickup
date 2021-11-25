@@ -9,6 +9,10 @@ const model = database.define("Task has e-mail", {
         type: Sequelize.STRING,
         allowNull: false,
     },
+    subject: {
+        type: Sequelize.STRING,
+        allowNull: false,
+    },
     email_id: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -16,7 +20,7 @@ const model = database.define("Task has e-mail", {
     },
 });
 
-const task_references = async (references, data) => {
+const task_references = async (references, data, subject) => {
     debug("associando tarefa ao e-mail");
     debug(
         "E-mails: %O",
@@ -35,6 +39,7 @@ const task_references = async (references, data) => {
         return model.bulkCreate(
             references.map((id) => ({
                 task_id: data.id,
+                subject: subject ?? data.name,
                 email_id: id,
             }))
         );

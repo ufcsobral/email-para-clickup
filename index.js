@@ -33,16 +33,27 @@ app.post("/:to", async (req, res) => {
     }
     debug(config_file, fs.existsSync(config_file), config);
 
+    const subject = req.body.headers.subject
+        .replace(/^(Fwd|Enc|Re)\:/i, "")
+        .trim();
     const from = req.body.headers.from.match(/[^< ]+(?=>)/);
-    const { message_id } = req.body.headers;
+    req.body.headers.subject = subject;
+    req.body.headers.from = from[0];
 
     await db();
-    const task = await task_emails.findByPk(message_id);
+    const tasks = await task_emails.findAll({
+        where: { subject: subject },
+    });
 
-    if (task === null) {
-        if (!config.ignore.includes(from[0])) {
+    console.log(tasks);
+
+    if (tasks.length < 1) {
+        if (!config.ignore.includes(req.body.headers.from)) {
             debug("Tarefa ainda não criada");
-            const clickup = await create_task(config, from, req.body);
+            const clickup = await create_task(
+                config,
+                req.body
+            );
 
             if (clickup !== false) {
                 const r = `Tarefa criada: https://app.clickup.com/t/${clickup.id}`;
@@ -63,9 +74,9 @@ app.post("/:to", async (req, res) => {
             res.send(r.join("\n"));
         }
     } else {
-        const r = `Tarefa já existe: https://app.clickup.com/t/${task.task_id}`;
+        const r = `Tarefa já existe: https://app.clickup.com/t/${tasks[0].task_id}`;
         debug(r);
-        res.send(await comment_task(task.task_id, config, req.body));
+        res.send(await comment_task(tasks[0].task_id, config, req.body));
     }
 });
 
