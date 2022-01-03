@@ -11,13 +11,13 @@ const date = moment().format("YYYY-MM-DD_HH-mm-ss.x");
 
 const create_task = async (config, body) => {
     const { subject, message_id, references, from } = body.headers;
-    const date = moment(body.headers.date).format(
+    const hDate = moment(body.headers.date).format(
         "HH[h]mm[min] [de] DD/MM/YYYY"
     );
 
     /* Converte o HTML para MarkDown */
     let data = {};
-    data.markdown_description = `# Às ${date} ${from} enviou\n\n`;
+    data.markdown_description = `# Às ${hDate} ${from} enviou\n\n`;
 
     if (body.html !== null) {
         const html = markdown(body.html.trim());
