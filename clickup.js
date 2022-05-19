@@ -17,7 +17,8 @@ const create_task = async (config, body) => {
 
     /* Converte o HTML para MarkDown */
     let data = {};
-    data.markdown_description = `# Às ${hDate} ${from} enviou\n\n`;
+    data.markdown_description = `# ${subject}\n`;
+    data.markdown_description = `${data.markdown_description}***Às ${hDate} ${from} enviou***\n\n`;
 
     if (body.html !== null) {
         const html = markdown(body.html.trim());
